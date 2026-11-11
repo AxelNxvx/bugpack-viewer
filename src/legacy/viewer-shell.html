@@ -1,0 +1,256 @@
+<nav class="nav">
+  <a class="nav-brand" href="#" aria-label="BugPack Viewer">
+    <img class="nav-logo-img" src="/identity/bugpack_logo_color.svg" alt="">
+  </a>
+  <div class="nav-sep"></div>
+  <span class="nav-file" id="nav-filename">viewer</span>
+  <div class="nav-spacer"></div>
+  <button class="nav-btn btn btn-ghost" id="btn-redact-pii" type="button" hidden title="Mask emails, tokens, and auth values in logs and payloads">Mask Data</button>
+  <button class="nav-btn btn btn-ghost" id="btn-copy-report" type="button" hidden>Copy report</button>
+  <button class="nav-btn btn btn-ghost" id="btn-open">Open .bugpack</button>
+  <div class="drop-title">Drop your .bugpack file here</div> 
+  <button ... onclick="document.getElementById('file-input').click()" class="nav-btn btn btn-primary btn-pill" id="btn-browse">Browse file</button>
+  <div class="drop-hint">All processing happens locally — nothing is uploaded</div>
+</nav>
+
+<div id="drop-zone">
+  <div class="drop-box">
+    <div class="drop-logo-container">
+      <img class="drop-logo" src="/identity/bugpack_logo_color.svg" alt="BugPack">
+    </div>
+    <div class="ext-badge">.bugpack</div>
+    <div class="drop-title">Drop your .bugpack file here</div>
+    <div class="drop-sub">Drag and drop a .bugpack file to inspect<br>the screen recording and technical logs</div>
+    <div class="drop-or">or</div>
+    <button class="nav-btn btn btn-primary btn-pill" onclick="document.getElementById('file-input').click()">Browse file</button>
+    <div class="drop-hint">All processing happens locally — nothing is uploaded</div>
+  </div>
+</div>
+
+<input type="file" id="file-input" accept=".bugpack,.bug" style="display:none">
+
+<div id="viewer">
+  <div class="meta-bar">
+    <div class="meta-item meta-url-item"><div class="meta-dot"></div><span id="meta-url-wrap" class="meta-url-wrap">—</span></div>
+    <div class="meta-health" id="meta-health" hidden></div>
+    <div class="meta-item">&#x1F550; <span id="meta-ts">—</span></div>
+    <div class="meta-item" id="meta-env-container" style="display: none;">🌍 <span id="meta-env">—</span></div>
+    <div class="meta-item">&#x1F5A5; <span id="meta-ua">—</span></div>
+    <div class="meta-spacer"></div>
+    <div class="meta-annotate-actions" id="meta-annotate-actions" hidden>
+      <button type="button" class="ann-toolbar-btn ghost" id="annotate-cancel" disabled>Cancel</button>
+      <button type="button" class="ann-toolbar-btn primary" id="annotate-save" disabled>Save</button>
+    </div>
+  </div>
+  <div class="panels">
+    <div class="video-panel">
+      <div class="player-shell">
+        <div class="annotate-toolbar" id="annotate-toolbar" data-tool="select">
+          <div class="ann-toolbar-top">
+            <div class="ann-tools-track" id="ann-tools-track" role="toolbar" aria-label="Annotation tools">
+              <div class="ann-tools-glider" id="ann-tools-glider" aria-hidden="true"></div>
+              <button type="button" class="ann-labeled-tool" data-tool="pan" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11V6.5A2.5 2.5 0 0111.5 4h1A2.5 2.5 0 0115 6.5V11"/><path d="M6 11h12l-1.2 8.4a1 1 0 01-.98.86H8.18a1 1 0 01-.98-.86L6 11z"/></svg>
+                <span>Hand</span><kbd>H</kbd>
+              </button>
+              <button type="button" class="ann-labeled-tool active" data-tool="select" aria-pressed="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>Move</span><kbd>V</kbd>
+              </button>
+              <button type="button" class="ann-labeled-tool" data-tool="note" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9h10M7 13h6"/><path d="M6 3h12a2 2 0 012 2v11l-4-3H6a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+                <span>Note</span><kbd>N</kbd>
+              </button>
+              <button type="button" class="ann-labeled-tool" data-tool="draw" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20l-1-1 7-7 2 2-7 7-1-1z"/><path d="M18 11l-3-3"/><path d="M4 20l1-4 3 3-4 1z"/></svg>
+                <span>Pen</span><kbd>P</kbd>
+              </button>
+              <button type="button" class="ann-labeled-tool" data-tool="rect" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                <span>Box</span><kbd>R</kbd>
+              </button>
+              <button type="button" class="ann-labeled-tool" data-tool="arrow" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L19 5"/><path d="M13 5h6v6"/></svg>
+                <span>Arrow</span><kbd>A</kbd>
+              </button>
+              <button type="button" class="ann-labeled-tool" data-tool="blur" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" opacity=".45"/><rect x="14" y="3" width="7" height="7" rx="1" opacity=".7"/><rect x="3" y="14" width="7" height="7" rx="1" opacity=".7"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Blur</span><kbd>B</kbd>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="video-wrap" id="video-wrap">
+          <div class="ann-style-bar" id="ann-style-bar" hidden>
+            <p class="ann-tool-hint" id="ann-style-hint" hidden></p>
+            <div class="ann-style-panel" data-panel="stroke" id="ann-panel-stroke" hidden>
+              <label class="ann-style-field">
+                <span>Color</span>
+                <span class="ann-color-wrap"><input type="color" id="annotate-color" value="#ff6b6b" aria-label="Stroke color"></span>
+              </label>
+              <label class="ann-style-field ann-style-field-grow">
+                <span>Width</span>
+                <input type="range" id="annotate-stroke-range" class="ann-range" min="1" max="16" step="1" value="3">
+                <select id="annotate-stroke" class="ann-select ann-select-narrow" aria-label="Stroke width">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3" selected>3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="8">8</option>
+                  <option value="12">12</option>
+                  <option value="16">16</option>
+                </select>
+              </label>
+            </div>
+            <div class="ann-style-panel" data-panel="blur" id="ann-panel-blur" hidden>
+              <label class="ann-style-field ann-style-field-grow">
+                <span>Blur</span>
+                <input type="range" id="annotate-blur-range" class="ann-range" min="4" max="48" step="2" value="14">
+                <output id="annotate-blur-value" class="ann-range-value">14px</output>
+              </label>
+              <label class="ann-style-field">
+                <span>Preset</span>
+                <select id="annotate-blur" class="ann-select" aria-label="Blur intensity preset">
+                  <option value="8">Light</option>
+                  <option value="14" selected>Medium</option>
+                  <option value="22">Strong</option>
+                  <option value="32">Heavy</option>
+                  <option value="48">Max</option>
+                </select>
+              </label>
+            </div>
+            <div class="ann-style-panel" data-panel="note" id="ann-panel-note" hidden>
+              <label class="ann-style-field">
+                <span>Pin color</span>
+                <span class="ann-color-wrap"><input type="color" id="annotate-note-color" value="#ff6b6b" aria-label="Note pin color"></span>
+              </label>
+            </div>
+          </div>
+          <div class="video-zoom-layer" id="video-zoom-layer">
+            <div class="video-frame-fit" id="video-frame-fit">
+              <video id="video-player" class="vsc-ignore" playsinline disablePictureInPicture disableRemotePlayback></video>
+              <canvas id="annotate-overlay"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="player-bar">
+          <button type="button" id="btn-play-pause" class="player-btn" title="Play/Pause">▶</button>
+          <button type="button" id="btn-stop" class="player-btn player-btn-stop" title="Stop">⏹</button>
+          <div class="player-zoom" title="Zoom (Ctrl + rueda en el video)">
+            <button type="button" id="btn-zoom-out" class="player-btn" aria-label="Zoom out">−</button>
+            <span id="zoom-label" class="zoom-label">100%</span>
+            <button type="button" id="btn-zoom-in" class="player-btn" aria-label="Zoom in">+</button>
+            <button type="button" id="btn-zoom-reset" class="player-btn player-btn-ghost" title="Reset zoom">1:1</button>
+          </div>
+          <button type="button" id="btn-fullscreen" class="player-btn" title="Fullscreen (F)">⛶</button>
+          <input type="range" id="seek-bar" class="seek-bar" min="0" max="1000" value="0" step="1">
+          <select id="playback-speed" class="player-speed" title="Speed">
+            <option value="0.5">0.5×</option>
+            <option value="0.75">0.75×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.25">1.25×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+          <span class="player-time"><span id="time-current">0:00</span> / <span id="time-duration">0:00</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="logs-panel">
+      <div class="log-quick-filters" id="log-quick-filters" hidden>
+        <button type="button" class="log-quick-btn active" data-qf="all">All</button>
+        <button type="button" class="log-quick-btn" data-qf="console-errors">Console errors</button>
+        <button type="button" class="log-quick-btn" data-qf="console-warns">Warnings</button>
+        <button type="button" class="log-quick-btn" data-qf="net-failed">Failed HTTP</button>
+        <button type="button" class="log-quick-btn" data-qf="net-xhr">XHR/Fetch</button>
+        <button type="button" class="log-quick-btn" data-qf="net-payload">With payload</button>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" id="tab-console" onclick="switchTab('console')">
+          Console <span class="tab-count" id="count-console">0</span>
+        </button>
+        <button class="tab-btn" id="tab-network" onclick="switchTab('network')">
+          Network <span class="tab-count" id="count-network">0</span>
+        </button>
+        <button class="tab-btn" id="tab-annotations" onclick="switchTab('annotations')">
+          Annotations <span class="tab-count" id="count-annotations">0</span>
+        </button>
+      </div>
+      <div class="log-list active" id="list-console"></div>
+      <div class="log-list" id="list-network"></div>
+      <div class="log-list" id="list-annotations"></div>
+    </div>
+  </div>
+</div>
+
+<div class="note-modal-backdrop" id="note-modal-backdrop" aria-hidden="true">
+  <div class="note-modal" id="note-modal" role="dialog" aria-modal="true" aria-labelledby="note-modal-title">
+    <header class="note-modal-header">
+      <div class="note-modal-head-left">
+        <div class="note-modal-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M7 9h10M7 13h6"/><path d="M6 3h12a2 2 0 012 2v11l-4-3H6a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+        </div>
+        <div>
+          <h3 id="note-modal-title">Add note</h3>
+          <p class="note-modal-subtitle" id="note-modal-subtitle">Pinned to the current video frame</p>
+          <span class="note-modal-view-badge" id="note-modal-view-badge">Read-only</span>
+        </div>
+      </div>
+      <button type="button" class="note-modal-close" id="note-modal-close" aria-label="Close">×</button>
+    </header>
+    <div class="note-modal-body">
+      <div class="note-modal-time">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span id="note-modal-meta">0:00.0</span>
+      </div>
+      <div class="note-modal-field">
+        <label for="note-modal-text">Description</label>
+        <textarea id="note-modal-text" rows="4" placeholder="What should someone know at this moment?"></textarea>
+        <div class="note-modal-field-foot">
+          <span class="note-modal-hint" id="note-modal-hint">Ctrl+Enter to save · Esc to cancel</span>
+          <span class="note-modal-count" id="note-modal-count">0</span>
+        </div>
+      </div>
+      <div class="note-modal-options">
+        <label for="note-modal-color">Pin color</label>
+        <input type="color" class="note-modal-color-input" id="note-modal-color" value="#ff6b6b" aria-label="Pin color">
+      </div>
+    </div>
+    <footer class="note-modal-actions">
+      <button type="button" class="note-modal-btn ghost" id="note-modal-cancel">Cancel</button>
+      <button type="button" class="note-modal-btn primary" id="note-modal-ok">Save note</button>
+    </footer>
+  </div>
+</div>
+
+<div class="note-modal-backdrop" id="pii-export-backdrop" aria-hidden="true">
+  <div class="note-modal pii-export-modal" id="pii-export-modal" role="dialog" aria-modal="true" aria-labelledby="pii-export-title">
+    <header class="note-modal-header">
+      <div class="note-modal-head-left">
+        <div class="note-modal-icon pii-export-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3l7 4v5c0 5-3 8-7 9-4-1-7-4-7-9V7l7-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <div>
+          <h3 id="pii-export-title">Sensitive data detected</h3>
+          <p class="note-modal-subtitle" id="pii-export-subtitle">Review before sharing this report</p>
+        </div>
+      </div>
+      <button type="button" class="note-modal-close" id="pii-export-close" aria-label="Close">×</button>
+    </header>
+    <div class="note-modal-body">
+      <p class="pii-export-lead" id="pii-export-lead"></p>
+      <ul class="pii-finding-list" id="pii-finding-list"></ul>
+      <label class="pii-export-option">
+        <input type="checkbox" id="pii-export-redact" checked>
+        <span>Mask sensitive data in exported report</span>
+      </label>
+      <p class="note-modal-hint">Use the Blur tool on video for on-screen secrets. This applies to console, network payloads and headers in the Markdown report.</p>
+    </div>
+    <footer class="note-modal-actions">
+      <button type="button" class="note-modal-btn ghost" id="pii-export-cancel">Cancel</button>
+      <button type="button" class="note-modal-btn ghost" id="pii-export-raw">Copy without masking</button>
+      <button type="button" class="note-modal-btn primary" id="pii-export-confirm">Copy report</button>
+    </footer>
+  </div>
+</div>
