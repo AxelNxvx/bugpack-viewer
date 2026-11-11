@@ -5,7 +5,7 @@ import { ReportList } from "./ReportList";
 
 export function App() {
   const viewerRef = useRef<HTMLDivElement>(null);
-  const [ready, setReady] = useState(false);
+  const [, setReady] = useState(false);
 
   useEffect(() => {
     const host = viewerRef.current;
