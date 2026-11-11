@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # BugPack Viewer
 
 Visor local de archivos `.bugpack` (video + logs). Stack preparado para integrar un backend más adelante.
@@ -85,3 +86,6 @@ Si editas `index.legacy.html`:
 ```bash
 pnpm extract-legacy
 ```
+=======
+# bugpack-viewer
+>>>>>>> c6906b24aa981a8e745ec28aba3ac87141d9535e
