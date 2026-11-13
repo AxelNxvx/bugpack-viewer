@@ -12,6 +12,7 @@ function switchTab(tab) {
   document.getElementById('list-' + tab).classList.add('active');
 }
 
+
 document.getElementById('btn-open').addEventListener('click', () => {
   document.getElementById('file-input').click();
 });
@@ -2300,70 +2301,6 @@ function renderConsole(events, timelineStart, maxVideoSec = Infinity) {
     list.appendChild(item);
   });
 }
-  const sorted = [...events].sort((a, b) => a.timestamp - b.timestamp);
-  const quickFiltered = sorted.filter(passesLogQuickFilterConsole);
-  const visible = quickFiltered.filter(ev => eventOffsetSec(ev, timelineStart) <= maxVideoSec + 0.05);
-  const errorCount = sorted.filter(e => e.type === 'error').length;
-  countEl.textContent = visible.length === quickFiltered.length
-    ? String(quickFiltered.length)
-    : `${visible.length}/${quickFiltered.length}`;
-  if (errorCount > 0) countEl.classList.add('has-errors');
-  else countEl.classList.remove('has-errors');
-
-  if (!visible.length) {
-    list.innerHTML = quickFiltered.length
-      ? '<div class="empty-state">Events will appear as the video plays</div>'
-      : '<div class="empty-state">No console events match the current filter</div>';
-    return;
-  }
-
-  visible.forEach(ev => {
-    const elapsed = eventOffsetSec(ev, timelineStart).toFixed(1);
-    const type = ev.type || 'log';
-    const badgeClass = { error:'badge-error', warn:'badge-warn', warning:'badge-warn', info:'badge-info', log:'badge-log' }[type] || 'badge-log';
-    const item = document.createElement('div');
-    item.className = `log-item ${type === 'error' ? 'error' : type === 'warn' ? 'warn' : ''}`;
-    item.innerHTML = `
-      <span class="log-time">+${elapsed}s</span>
-      <span class="log-badge ${badgeClass}">${type}</span>
-      <div>
-        <div class="log-text">${formatLogText(ev.text || '')}</div>
-        ${ev.url ? `<div class="log-url">${esc(ev.url)}${ev.line ? ':' + ev.line : ''}</div>` : ''}
-      </div>`;
-    list.appendChild(item);
-  });
-}
-
-function getNetworkDurationMs(ev) {
-  if (ev.wsClosedTimestamp && ev.timestamp) return ev.wsClosedTimestamp - ev.timestamp;
-  if (ev.lastFrameTimestamp && ev.timestamp) return ev.lastFrameTimestamp - ev.timestamp;
-  if (ev.durationMs) return ev.durationMs;
-  if (ev.responseTimestamp && ev.timestamp) return ev.responseTimestamp - ev.timestamp;
-  return ev.isWebSocket ? 0 : 120;
-}
-
-function isWebSocketEvent(ev) {
-  return ev.isWebSocket || (ev.resourceType || '').toLowerCase() === 'websocket';
-}
-
-function getNetworkDetailTabs(ev) {
-  if (isWebSocketEvent(ev)) {
-    return ['headers', 'messages', 'initiator', 'timing', 'cookies'];
-  }
-  const tabs = ['headers', 'payload', 'preview', 'response', 'initiator', 'timing', 'cookies'];
-  if (!hasCapturedPayload(ev)) {
-    return tabs.filter(t => t !== 'payload');
-  }
-  return tabs;
-}
-
-function getTimelineScaleMs(events, timelineStart, playheadSec) {
-  const ends = events.map(ev => eventOffsetSec(ev, timelineStart) * 1000 + getNetworkDurationMs(ev));
-  const maxEvent = ends.length ? Math.max(...ends) : 0;
-  const videoDurMs = resolveVideoDuration() * 1000;
-  return Math.max(playheadSec * 1000, maxEvent, videoDurMs, 200);
-}
-
 function pickRulerStepMs(scaleMs) {
   const steps = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 30000, 60000];
   const targetTicks = 8;
