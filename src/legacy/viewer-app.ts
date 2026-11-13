@@ -2301,6 +2301,13 @@ function renderConsole(events, timelineStart, maxVideoSec = Infinity) {
     list.appendChild(item);
   });
 }
+function getNetworkDurationMs(ev) {
+  if (ev.wsClosedTimestamp && ev.timestamp) return ev.wsClosedTimestamp - ev.timestamp;
+  if (ev.lastFrameTimestamp && ev.timestamp) return ev.lastFrameTimestamp - ev.timestamp;
+  if (ev.durationMs) return ev.durationMs;
+  if (ev.responseTimestamp && ev.timestamp) return ev.responseTimestamp - ev.timestamp;
+  return ev.isWebSocket ? 0 : 120;
+}
 function isWebSocketEvent(ev) {
   return ev.isWebSocket || (ev.resourceType || '').toLowerCase() === 'websocket';
 }
@@ -2314,6 +2321,12 @@ function getNetworkDetailTabs(ev) {
     return tabs.filter(t => t !== 'payload');
   }
   return tabs;
+}
+function getTimelineScaleMs(events, timelineStart, playheadSec) {
+  const ends = events.map(ev => eventOffsetSec(ev, timelineStart) * 1000 + getNetworkDurationMs(ev));
+  const maxEvent = ends.length ? Math.max(...ends) : 0;
+  const videoDurMs = resolveVideoDuration() * 1000;
+  return Math.max(playheadSec * 1000, maxEvent, videoDurMs, 200);
 }
 
 function pickRulerStepMs(scaleMs) {
