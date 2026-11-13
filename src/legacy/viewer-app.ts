@@ -1984,8 +1984,35 @@ function updateSessionHealth() {
   const el = document.getElementById('meta-health');
   if (!el) return;
   const stats = getSessionStats();
+
+  // --- CÁLCULO DEL HEALTH SCORE ---
+  let healthScore = 100;
+  healthScore -= stats.errorCount * 10; // -10 por error
+  healthScore -= stats.warnCount * 5;   // -5 por warning
+  healthScore -= stats.failedHttp * 15; // -15 por HTTP fallido
+  healthScore = Math.max(0, healthScore); // Evitar negativos
+
+  // Determinar color y texto según el puntaje
+  let scoreColor = 'var(--green)';
+  let scoreLabel = 'Saludable';
+  if (healthScore < 80) { scoreColor = 'var(--yellow)'; scoreLabel = 'Advertencia'; }
+  if (healthScore < 50) { scoreColor = 'var(--red)'; scoreLabel = 'Crítico'; }
+
+  // --- RENDERIZADO DE LOS CHIPS ---
   const chips = [];
+  
+  // 1. El nuevo chip del Health Score
+  chips.push(`
+    <span class="health-chip" style="border-color: ${scoreColor}; color: ${scoreColor}; font-weight: bold;" title="Health Score: ${healthScore}/100 (${scoreLabel})">
+      <span class="health-dot" style="background: ${scoreColor}"></span>
+      Score: ${healthScore}/100
+    </span>
+  `);
+
+  // 2. El chip de duración
   chips.push(`<button type="button" class="health-chip ok" data-qf="all"><span class="health-dot ok"></span>${formatDurationShort(stats.dur)}</button>`);
+  
+  // 3. Chips de errores y warnings
   if (stats.errorCount) {
     chips.push(`<button type="button" class="health-chip error${logQuickFilter === 'console-errors' ? ' active' : ''}" data-qf="console-errors"><span class="health-dot error"></span>${stats.errorCount} error${stats.errorCount === 1 ? '' : 's'}</button>`);
   }
@@ -1998,10 +2025,13 @@ function updateSessionHealth() {
   if (stats.payloadCount) {
     chips.push(`<button type="button" class="health-chip${logQuickFilter === 'net-payload' ? ' active' : ''}" data-qf="net-payload">${stats.payloadCount} with payload</button>`);
   }
+  
+  // 4. Chip de captura (si aplica)
   const captureStatus = getCaptureDisplayStatus(stats);
   if (captureStatus.show) {
     chips.push(`<span class="health-chip ${captureStatus.className}" title="${esc(captureStatus.title)}">${captureStatus.label}</span>`);
   }
+
   el.innerHTML = chips.join('');
   el.hidden = false;
 }
