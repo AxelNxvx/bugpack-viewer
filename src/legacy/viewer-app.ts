@@ -2216,6 +2216,64 @@ function renderConsole(events, timelineStart, maxVideoSec = Infinity) {
   const quickFiltered = sorted.filter(passesLogQuickFilterConsole);
   const visible = quickFiltered.filter(ev => eventOffsetSec(ev, timelineStart) <= maxVideoSec + 0.05);
   const errorCount = sorted.filter(e => e.type === 'error').length;
+  
+  countEl.textContent = visible.length === quickFiltered.length
+    ? String(quickFiltered.length)
+    : `${visible.length}/${quickFiltered.length}`;
+  if (errorCount > 0) countEl.classList.add('has-errors');
+  else countEl.classList.remove('has-errors');
+
+  if (!visible.length) {
+    list.innerHTML = quickFiltered.length
+      ? '<div class="empty-state">Events will appear as the video plays</div>'
+      : '<div class="empty-state">No console events match the current filter</div>';
+    return;
+  }
+
+  visible.forEach(ev => {
+    const elapsed = eventOffsetSec(ev, timelineStart);
+    const elapsedStr = elapsed.toFixed(1);
+    const type = ev.type || 'log';
+    const badgeClass = { error:'badge-error', warn:'badge-warn', warning:'badge-warn', info:'badge-info', log:'badge-log' }[type] || 'badge-log';
+    const item = document.createElement('div');
+    item.className = `log-item ${type === 'error' ? 'error' : type === 'warn' ? 'warn' : ''}`;
+    
+    // AGREGAMOS EL TÍTULO Y EL CURSOR PARA INDICAR QUE SE PUEDE HACER CLIC
+    item.style.cursor = 'pointer';
+    item.title = `Haz clic para saltar al segundo ${elapsedStr}s del video`;
+    
+    item.innerHTML = `
+      <span class="log-time">+${elapsedStr}s</span>
+      <span class="log-badge ${badgeClass}">${type}</span>
+      <div>
+        <div class="log-text">${formatLogText(ev.text || '')}</div>
+        ${ev.url ? `<div class="log-url">${esc(ev.url)}${ev.line ? ':' + ev.line : ''}</div>` : ''}
+      </div>`;
+      
+    // EL EVENTO MÁGICO: AL HACER CLIC, SALTA AL VIDEO
+    item.addEventListener('click', (e) => {
+      // Evitamos que el clic se propague si se hace clic en un botón de copiar
+      if (e.target.closest('.copy-btn')) return;
+      
+      // Saltamos al segundo exacto
+      videoPlayer.currentTime = elapsed;
+      videoPlayer.pause(); // Pausamos para que el QA pueda analizar el frame
+      updatePlayerTimeUi();
+      syncLogsToVideo(elapsed, { forceFull: true });
+      redrawAnnotationOverlay();
+      
+      // Hacemos un pequeño efecto visual para saber qué log se clickeó
+      document.querySelectorAll('.log-item').forEach(el => el.classList.remove('selected-log'));
+      item.classList.add('selected-log');
+    });
+
+    list.appendChild(item);
+  });
+}
+  const sorted = [...events].sort((a, b) => a.timestamp - b.timestamp);
+  const quickFiltered = sorted.filter(passesLogQuickFilterConsole);
+  const visible = quickFiltered.filter(ev => eventOffsetSec(ev, timelineStart) <= maxVideoSec + 0.05);
+  const errorCount = sorted.filter(e => e.type === 'error').length;
   countEl.textContent = visible.length === quickFiltered.length
     ? String(quickFiltered.length)
     : `${visible.length}/${quickFiltered.length}`;
@@ -3049,6 +3107,18 @@ function createNetworkRowElement(ev, labels) {
     </div>
     <div class="net-detail">${isOpen ? renderNetworkDetailPanel(ev, method, url, expandedNetworkTab) : ''}</div>`;
   attachNetworkRowHandlers(row, rowId);
+    // AGREGAMOS EL EVENTO PARA SALTAR AL VIDEO EN LA RED
+  row.querySelector('.net-item')?.addEventListener('click', (e) => {
+    // Evitamos que salte si se hace clic en un botón de copiar
+    if (e.target.closest('.copy-btn')) return;
+    
+    const offset = eventOffsetSec(ev, sessionEvents.timelineStart);
+    videoPlayer.currentTime = offset;
+    videoPlayer.pause();
+    updatePlayerTimeUi();
+    syncLogsToVideo(offset, { forceFull: true });
+    redrawAnnotationOverlay();
+  });
   return row;
 }
 
@@ -3228,4 +3298,3 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
   window.switchTab = switchTab;
-}

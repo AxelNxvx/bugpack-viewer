@@ -781,3 +781,8 @@
 }
   @keyframes spin { to { transform: rotate(360deg); } }
   /* Asegura que los botones del visor legacy reciban los clics */
+/* Estilo para el log seleccionado */
+.log-item.selected-log {
+  background: rgba(29, 185, 106, 0.15) !important;
+  border-left: 3px solid #1db96a !important;
+}
