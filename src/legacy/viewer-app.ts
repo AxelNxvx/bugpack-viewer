@@ -2301,6 +2301,21 @@ function renderConsole(events, timelineStart, maxVideoSec = Infinity) {
     list.appendChild(item);
   });
 }
+function isWebSocketEvent(ev) {
+  return ev.isWebSocket || (ev.resourceType || '').toLowerCase() === 'websocket';
+}
+
+function getNetworkDetailTabs(ev) {
+  if (isWebSocketEvent(ev)) {
+    return ['headers', 'messages', 'initiator', 'timing', 'cookies'];
+  }
+  const tabs = ['headers', 'payload', 'preview', 'response', 'initiator', 'timing', 'cookies'];
+  if (!hasCapturedPayload(ev)) {
+    return tabs.filter(t => t !== 'payload');
+  }
+  return tabs;
+}
+
 function pickRulerStepMs(scaleMs) {
   const steps = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 30000, 60000];
   const targetTicks = 8;
