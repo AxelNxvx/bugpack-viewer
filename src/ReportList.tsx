@@ -176,7 +176,7 @@ export function ReportList() {
             />
             <div className="rp-text">
               <span className="rp-title">{r.title}</span>
-              <span className="rp-meta">{formatDate(r.createdAt)} · {r.severity ? r.severity.toUpperCase() : "LOW"}</span>
+              <span className="rp-meta">{formatDate(r.createdAt)} · {r.severity ? r.severity.toUpperCase() : "LOW"}{typeof r.score === "number" ? ` · ${r.score}/100` : ""}</span>
             </div>
             <button style={{color:'#fff'}} className="rp-action-btn" onClick={(e) => copyDeepLink(e, r.id)}>
               {copiedId === r.id ? "✅" : "Liga Compartible"}
