@@ -1987,10 +1987,16 @@ function updateSessionHealth() {
   const stats = getSessionStats();
 
   // --- CÁLCULO DEL HEALTH SCORE ---
+  // IMPORTANTE: misma fórmula que el servidor (analyzeDebugData en server.js).
+  // Si cambias una, cambia la otra.
+  const net = sessionEvents.network || [];
+  const http4 = net.filter(e => !e.isWebSocket && e.status >= 400 && e.status < 500).length;
+  const http5 = net.filter(e => !e.isWebSocket && e.status >= 500).length;
   let healthScore = 100;
-  healthScore -= stats.errorCount * 10; // -10 por error
+  healthScore -= stats.errorCount * 10; // -10 por error de consola
   healthScore -= stats.warnCount * 5;   // -5 por warning
-  healthScore -= stats.failedHttp * 15; // -15 por HTTP fallido
+  healthScore -= http4 * 15;            // -15 por HTTP 4xx
+  healthScore -= http5 * 30;            // -30 por HTTP 5xx
   healthScore = Math.max(0, healthScore); // Evitar negativos
 
   // Determinar color y texto según el puntaje
