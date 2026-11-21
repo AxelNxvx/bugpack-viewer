@@ -11,6 +11,7 @@ export type RemoteReportSummary = {
   url?: string;
   env?: string;
   severity?: string;
+  score?: number;
   user?: string;
   nas?: { status: NasStatus; path?: string; error?: string | null };
 };
